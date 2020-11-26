@@ -21,3 +21,9 @@ variable "ttl" {
   type        = number
   default     = 60
 }
+
+variable "subject_alternative_names" {
+  description = "List of additional domains that should be added to the issued certificate as subject alternative names (SANs)."
+  type        = list(string)
+  default     = []
+}
