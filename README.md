@@ -10,7 +10,7 @@ Creates the following resources:
 - ACM Certificate Validation request
 - Route 53 CNAME DNS record for validation request
 
-# Exmaples
+# Examples
 ## Existing hosted zone wildcard
 ```terraform
 data "aws_route53_zone" "selected" {

@@ -1,7 +1,3 @@
-terraform {
-  required_version = ">= 0.12"
-}
-
 # ---------------------------------------------------------------------------------------------------------------------
 # ACM public Certificate
 # Provider Docs: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate
