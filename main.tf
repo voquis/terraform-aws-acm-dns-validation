@@ -14,7 +14,7 @@ resource "aws_acm_certificate" "this" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# Certificate alidation request
+# Certificate validation request
 # Provider Docs: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate_validation
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -29,18 +29,12 @@ resource "aws_acm_certificate_validation" "this" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_route53_record" "this" {
-  for_each = {
-    for dvo in aws_acm_certificate.this.domain_validation_options : dvo.domain_name => {
-      name   = dvo.resource_record_name
-      record = dvo.resource_record_value
-      type   = dvo.resource_record_type
-    }
-  }
-
+  count = length(var.domain_name)
   allow_overwrite = true
-  name            = each.value.name
-  records         = [each.value.record]
-  ttl             = var.ttl
-  type            = each.value.type
-  zone_id         = var.zone_id
+  name = aws_acm_certificate.this.domain_validation_options[count.index].resource_record_name
+  records = [aws_acm_certificate.this.domain_validation_options[count.index].resource_record_value]
+  ttl = var.ttl
+  type = aws_acm_certificate.this.domain_validation_options[count.index].resource_record_type
+  zone_id = var.zone_id[count.index]
+
 }

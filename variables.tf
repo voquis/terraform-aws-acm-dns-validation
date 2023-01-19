@@ -4,12 +4,12 @@
 
 variable "zone_id" {
   description = "Route 53 hosted zone id for domain"
-  type        = string
+  type        = list(string)
 }
 
 variable "domain_name" {
   description = "Domain name for which ACM public certificate is being requestion, may be wildcard"
-  type        = string
+  type        = list(string)
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
