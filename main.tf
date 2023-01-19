@@ -19,7 +19,8 @@ resource "aws_acm_certificate" "this" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_acm_certificate_validation" "this" {
-  certificate_arn         = aws_acm_certificate.this.arn
+  count                    = length(var.domain_name)
+  certificate_arn          = aws_acm_certificate.this[count.index].arn
   validation_record_fqdns = [for record in aws_route53_record.this : record.fqdn]
 }
 
@@ -31,10 +32,9 @@ resource "aws_acm_certificate_validation" "this" {
 resource "aws_route53_record" "this" {
   count = length(var.domain_name)
   allow_overwrite = true
-  name = aws_acm_certificate.this.domain_validation_options[count.index].resource_record_name
-  records = [aws_acm_certificate.this.domain_validation_options[count.index].resource_record_value]
+  name = aws_acm_certificate.this[count.index].domain_validation_options.resource_record_name
+  records = [aws_acm_certificate.this[count.index].domain_validation_options.resource_record_value]
   ttl = var.ttl
-  type = aws_acm_certificate.this.domain_validation_options[count.index].resource_record_type
+  type = aws_acm_certificate.this[count.index].domain_validation_options.resource_record_type
   zone_id = var.zone_id[count.index]
-
 }
