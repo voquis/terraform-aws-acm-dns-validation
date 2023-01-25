@@ -5,7 +5,7 @@
 
 resource "aws_acm_certificate" "this" {
   domain_name               = var.domain_name
-  subject_alternative_names = var.subject_alternative_names
+  subject_alternative_names = var.additional_domain_names
   validation_method         = "DNS"
 
   lifecycle {
@@ -14,14 +14,13 @@ resource "aws_acm_certificate" "this" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# Certificate validation request
+# Certificate alidation request
 # Provider Docs: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate_validation
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_acm_certificate_validation" "this" {
-  count                    = length(var.domain_name)
-  certificate_arn          = aws_acm_certificate.this[count.index].arn
-  validation_record_fqdns = [for record in aws_route53_record.this : record.fqdn]
+  certificate_arn         = aws_acm_certificate.this.arn
+  validation_record_fqdns = [for record in aws_route53_record.this : record.fqdn] + [for record in aws_route53_record.additional_domains : record.fqdn]
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -30,11 +29,30 @@ resource "aws_acm_certificate_validation" "this" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_route53_record" "this" {
-  count = length(var.domain_name)
+  for_each = {
+    for dvo in aws_acm_certificate.this.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
+  }
+
   allow_overwrite = true
-  name = aws_acm_certificate.this[count.index].domain_validation_options.resource_record_name
-  records = [aws_acm_certificate.this[count.index].domain_validation_options.resource_record_value]
-  ttl = var.ttl
-  type = aws_acm_certificate.this[count.index].domain_validation_options.resource_record_type
-  zone_id = var.zone_id[count.index]
+  name            = each.value.name
+  records         = [each.value.record]
+  ttl             = var.ttl
+  type            = each.value.type
+  zone_id         = var.zone_id
+}
+
+
+resource "aws_route53_record" "additional_domains" {
+  for_each = var.additional_domain_names
+
+  allow_overwrite = true
+  name            = each.value
+  records         = [aws_acm_certificate.this.domain_validation_options[each.value].resource_record_value]
+  ttl             = var.ttl
+  type            = aws_acm_certificate.this.domain_validation_options[each.value].resource_record_type
+  zone_id         = var.zone_id
 }
