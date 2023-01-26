@@ -23,7 +23,10 @@ variable "ttl" {
 }
 
 variable "subject_alternative_names" {
-  description = "List of additional domains that should be added to the issued certificate as subject alternative names (SANs)."
-  type        = list(string)
-  default     = []
+  description = "List of additional domains that should be added to the issued certificate as subject alternative names (SANs). Each SAN domain will need a zone ID supplied"
+  type = list(object({
+    name    = string
+    zone_id = string
+  }))
+  default = []
 }
