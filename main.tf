@@ -4,11 +4,9 @@
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_acm_certificate" "this" {
-  domain_name = var.domain_name
-  subject_alternative_names = [
-    for s in var.subject_alternative_names : s.name
-  ]
-  validation_method = "DNS"
+  domain_name               = var.domain_name
+  subject_alternative_names = var.subject_alternative_names
+  validation_method         = "DNS"
 
   lifecycle {
     create_before_destroy = true
@@ -16,7 +14,7 @@ resource "aws_acm_certificate" "this" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# Certificate validation request
+# Certificate alidation request
 # Provider Docs: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate_validation
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -32,7 +30,11 @@ resource "aws_acm_certificate_validation" "this" {
 
 resource "aws_route53_record" "this" {
   for_each = {
-    for domain_validation in local.domain_validations : "${domain_validation.san_domain_key}.${domain_validation.dvo_key}" => domain_validation
+    for dvo in aws_acm_certificate.this.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
   }
 
   allow_overwrite = true
@@ -40,5 +42,5 @@ resource "aws_route53_record" "this" {
   records         = [each.value.record]
   ttl             = var.ttl
   type            = each.value.type
-  zone_id         = each.value.zone_id
+  zone_id         = var.zone_id
 }
