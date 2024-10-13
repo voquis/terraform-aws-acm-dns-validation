@@ -1,6 +1,6 @@
 ACM DNS Validation
 ===
-Terraform 0.12+ module to provision AWS Certificate Manager (ACM) public certificate using DNS validation.
+Terraform 0.13+ module to provision AWS Certificate Manager (ACM) public certificate using DNS validation.
 This module will create a CNAME DNS record in the specified hosted zone for validation.
 WIldcard certificates may be issued.
 An optional list of subject alternative names (SANs) may be provided to append to the certificate.
@@ -19,7 +19,7 @@ data "aws_route53_zone" "selected" {
 
 module "wildcard_example_com" {
   source  = "voquis/acm-dns-validation/aws"
-  version = "0.0.3"
+  version = "1.0.0"
 
   zone_id                   = data.aws_route53_zone.selected.id
   domain_name               = "*.my.example.com"
@@ -37,7 +37,7 @@ resource "aws_route53_zone" "example_com" {
 
 module "wildcard_example_com" {
   source  = "voquis/acm-dns-validation/aws"
-  version = "0.0.3"
+  version = "1.0.0"
 
   zone_id     = aws_route53_zone.example_com.id
   domain_name = "example.com"
@@ -56,7 +56,7 @@ provider "aws" {
 
 module "wildcard_example_com_useast1" {
   source  = "voquis/acm-dns-validation/aws"
-  version = "0.0.3"
+  version = "1.0.0"
 
   providers   = {
     aws = aws.useast1
